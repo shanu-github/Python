@@ -4,8 +4,27 @@ Created on Thu Sep 29 20:01:45 2022
 
 @author: shanu
 """
+#---------------------------------------------------------------------------------
+#String In Python: Used to store text information
+#Strings are represented by quotes in python (single, double, tripple)
+#python stores each character of string in different memory location index starts with 0
 
 string= "Hello World"
+
+#Single/ double quotation
+text="hello"
+text='text'
+text= 'let's learn python' #throw error
+#if single quote inside then use double quote outside viceversa
+text= "let's learn python"
+
+text = 'hello "world"'
+
+#When multi line use triple quote
+address= '''123, House No 209
+Ashoka palace'''
+
+
 string[0]
 string[5]
 len(string)
@@ -14,7 +33,9 @@ string[len(string)-1]
 string[-2]
 string[-1]
 string[2:5]
-string[0]= 8
+string[0]= 8 #if you want to change specific character
+#you will get error, as strings are immutable can not be changed partially, you can change whole
+
 string[:5]
 string*4
 string[0:5]*4
@@ -35,6 +56,24 @@ str.split(string, 'World') #provide parts without spiltvalue
 string2= string[:] or string[::]
 print(id(string))
 print(id(string2))
+
+#------------------------------------------------------------
+#Operations in String
+#Concatination in strings
+s1="Good"
+s2="Morning"
+
+s1+s2
+#want to add space
+s1+' '+s2
+
+#want to concat number with string
+s1+123  #wrong
+
+#convert number to string first and then concat
+str(123) #to know whether converted or not
+s1+ str(123)
+
 '''
 Write a program with a user defined 
 function with string as a parameter which 
@@ -107,45 +146,3 @@ modified sentence.
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-def str_count(mystring):
-    print( "Given string", mystring)
-    print( "Total number of characters in string",len(mystring))
-    print( "Total number of words in string", len(mystring.split(' ')))
-    alpha_count=0
-    digit_count=0
-    ssymbol_count=0
-    alphabets ='ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-    for ch in mystring :
-        if ch in alphabets:
-            alpha_count= alpha_count+1
-        elif ch in alphabets.lower():
-            alpha_count=alpha_count+1
-        elif ch in '0123456789':
-            digit_count=digit_count+1
-        else:
-            ssymbol_count=ssymbol_count+1
-    print( "Total number of alphabets in string",alpha_count)
-    print( "Total number of digits in string", digit_count)
-    print( "Total number of special symbol in string", ssymbol_count)
-            
-    
-str_count('I started learning Python from 30-09-2022')
