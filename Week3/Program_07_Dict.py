@@ -53,6 +53,21 @@ number in words. For example, if the
 input is 876 then the output should be 
 ‘Eight Seven Six’.
 '''
+
+def convert_num_text(num):
+    num_dict= {1:'one',2: 'two', 3:'three', 4:'four', 5:'five', 6:'six', 7:'seven',8:'eight', 9:'nine', 0:'zero'}
+    num_string=''
+    for n in str(num):
+        num_string= num_string+' '+ num_dict[int(n)]
+    return(num_string)
+        
+
+convert_num_text(780)
+
+
+
+
+
 for ch in str(789):
     print(ch)
 
@@ -81,6 +96,34 @@ Sample string : 'w3resource'
 Expected output : {'3': 1, 's': 1, 'r': 2, 'u': 1, 'w': 1, 'c': 1, 
 'e': 2, 'o': 1}
 '''
+
+def ch_count(my_string):
+    ch_dict={}
+    for ch in my_string:
+        if ch in ch_dict.keys():
+            ch_dict[ch]= ch_dict[ch]+1
+        else:
+            ch_dict[ch]= 1
+    return ch_dict
+        
+
+'''
+Write a Python program to create a dictionary from 
+a string.
+Note: Track the count of the words from the string.
+Sample string : "apple is sold by apple seller"
+Expected output : {'apple': 2, 'is': 1, 'r': 2, 'u': 1, 'w': 1, 'c': 1, 
+'e': 2, 'o': 1}
+'''
+
+
+
+
+
+
+
+
+
 def char_count(my_string):
     count_dict= dict()
     for ch in my_string:

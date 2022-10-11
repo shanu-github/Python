@@ -69,14 +69,15 @@ mod_points.count(20)
 mod_points.index(12)
 mod_points.index(6)
 
+
+
+#Tuple Traversal
+for num in point:
+    print(num)
+
 #delete the value from tuple
 #Note: You cannot remove items in a tuple
 del point
-
-#Tuple Traversal
-for num in points:
-    print(num)
-
 
 '''
 Write a program to compute the area 
