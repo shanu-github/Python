@@ -18,7 +18,11 @@ IDE : An integrated development environment is software for building application
 Python from Krish Naik and dhaval
 
 https://www.youtube.com/playlist?list=PLeo1K3hjS3uuASpe-1LjfG5f14Bnozjwy
+
 https://www.youtube.com/watch?v=bPrmA1SEN2k&list=PLZoTAELRMXVNUL99R4bDlVYsncUNvwUBB
+
+Base Statistics
+https://www.mathsisfun.com
 
 Machine Learning from krish naik & Code Basics
 https://www.youtube.com/watch?v=JG8GRlMjp3c&list=PLZoTAELRMXVPBTrWtJkn3wWQxZkmTXGwe&index=29
