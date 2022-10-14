@@ -51,6 +51,7 @@ sns.displot(data=emp_data, kind="ecdf", x="CTC", hue="GENDER", rug=True)
 
 sns.kdeplot(data=emp_data,x="CTC",shade=True, color='b')
 
+sns.kdeplot(data=emp_data,x="CTC",hue='GENDER',shade=True, color='b')
 
 sns.factorplot(data=emp_data, x='ANNUAL PERFORMANCE RATING',kind="count", color='steelblue')
 sns.displot(data=emp_data, x="ANNUAL PERFORMANCE RATING", kde=False)
