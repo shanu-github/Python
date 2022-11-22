@@ -5,6 +5,40 @@ Created on Sun Nov 13 05:49:29 2022
 @author: shanu
 """
 '''
+Covariance provides the a measure of strength of correlation between two
+ variable or more set of variables.
+
+If COV(xi, xj) = 0 then variables are uncorrelated
+If COV(xi, xj) > 0 then variables positively correlated
+If COV(xi, xj) > < 0 then variables negatively correlated
+
+'''
+import pandas as pd
+loan_data = pd.read_csv("C:\\Users\\shanu\\OneDrive\\Desktop\\Data_Science\\Python\\Week3\\Loan_Prediction.csv")
+
+loan_data= loan_data.dropna(subset = ['LoanAmount','ApplicantIncome'])
+
+loan_data['LoanAmount'].std()
+loan_data['LoanAmount'].var()
+
+import numpy as np
+np.cov(loan_data['LoanAmount'],loan_data['ApplicantIncome'])
+np.corrcoef(loan_data['LoanAmount'],loan_data['ApplicantIncome'])
+
+
+x = [1.23, 2.12, 3.34, 4.5]
+
+y = [2.56, 2.89, 3.76, 3.95]
+
+np.cov(x,y)
+
+np.var(x)
+np.var(y)
+
+np.std(x)
+
+
+'''
 Example: Correlation Test in Python
 To determine if the correlation coefficient between two variables is
  statistically significant, you can perform a correlation test in Python using 
