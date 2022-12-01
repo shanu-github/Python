@@ -50,7 +50,8 @@ from sklearn.model_selection import train_test_split
 #random split for  train data(80%) and test 20%)
 train_data, test_data = train_test_split(st_data, test_size=0.2, random_state=31)
 
-
+#------------------------------------------------------------
+#Model1 : classification with only numeric columns
 xtrain = train_data[st_data._get_numeric_data().columns]
 ytrain = train_data['passed']
 
@@ -62,10 +63,15 @@ model.fit(xtrain, ytrain)
 train_data['NcolPrediction']=  model.predict(xtrain)
 
 pd.crosstab(ytrain, train_data['NcolPrediction'])
-
 #-------------------------------------------------------------------
-#model2
+#model2: Classification with selected numeric columns
 sns.boxplot(st_data['age'], st_data['passed'] )
+
+#Exploratory Data Analysis
+
+st_data.describe()
+
+st_data.dtypes
 
 import scipy.stats as stats
 
@@ -81,7 +87,10 @@ for num_col in st_data._get_numeric_data().columns :
     print(stats.ttest_ind(a= st_data.loc[st_data['passed']=='no', num_col],
                     b= st_data.loc[st_data['passed']=='yes', num_col],
                     alternative='two-sided'))
-    
+ 
+#age, failures is important
+#Medu, Fedu,studytime is less important
+#traveltime is not important
 xtrain = train_data[['age','Medu','Fedu','failures','goout','absences','studytime']]
 ytrain = train_data['passed']
 
@@ -95,30 +104,43 @@ train_data['NcolPrediction']=  model.predict(xtrain)
 pd.crosstab(ytrain, train_data['NcolPrediction'])
 
 #------------------------------------------------------
-#model3
+#model3 : classification with both selected numeric and categorical columns
 xtrain = train_data[['age','Medu','Fedu','failures','goout','absences','studytime']]
 ytrain = train_data['passed']
 obj_cols= ['school', 'sex', 'address', 'famsize', 'Pstatus', 
        'Mjob', 'Fjob', 'reason', 'guardian', 'schoolsup', 'famsup', 'paid', 
        'activities', 'nursery','higher', 'internet', 'romantic' ]
 
+#creating dummy variables for categorical column 
 for cat_var in obj_cols:
+    '''
     dummy_data= pd.get_dummies(train_data[cat_var])
+    
     cols= dummy_data.columns
+    #adding column name in fornt to recognize otherwise only yes or no
     new_cols= []
     for col in cols:
-        new_cols.append(cat_var+col)
+        new_cols.append(cat_var+'_'+col)
         
     dummy_data.columns= new_cols
-    xtrain = pd.concat([xtrain, dummy_data], axis =1)
+    '''
+    dummy_data= pd.get_dummies(train_data[cat_var], prefix= cat_var)
+    #xtrain = pd.concat([xtrain, dummy_data], axis =1)
+    xtrain= xtrain.join(dummy_data)
     
 from sklearn.linear_model import LogisticRegression
 
 model= LogisticRegression()
 model.fit(xtrain, ytrain)
 
-train_data['prob_'+model.classes_[0]]=  model.predict_proba(xtrain)[:,0]
+train_data['NcolPrediction']=  model.predict(xtrain)
 
+pd.crosstab(ytrain, train_data['NcolPrediction'])
+
+# the default threshold is 0.5, it seems like model perforamnce not improving lets try to
+#better threshold using precision and recall
+
+train_data['prob_'+model.classes_[0]]=  model.predict_proba(xtrain)[:,0]
 
 sns.boxplot(train_data['prob_no'],train_data['passed'])
 
@@ -148,29 +170,82 @@ pd.crosstab(ytrain, train_data['NcolPrediction'])
 from sklearn.metrics import classification_report
 print(classification_report(train_data['NcolPrediction'],train_data['passed']))
 
-pd.DataFrame(model.coef_, columns= xtrain.columns).
-print(pd.DataFrame({'Features': xtrain.columns,'Coeffiecient': model.coef_}))
+pd.DataFrame(model.coef_, columns= xtrain.columns)
 
+print(pd.DataFrame({'Features': xtrain.columns,'Coeffiecient': model.coef_[0]}))
 
 model.intercept_
 
+#---------------------------------------------------------------------
+#model 4: Selection with categorical variable
+# list of dtypes to include
+cat_summary= pd.DataFrame(st_data.describe(include= ['object']))
 
-st_data['passed'].value_counts()
+cat_summary = cat_summary.T
 
-#age, failures is important
-#Medu, Fedu,studytime is less important
-#traveltime is not important
-
-
-
+# Chi -square test for each categorical variable
+obj_cols= ['school', 'sex', 'address', 'famsize', 'Pstatus', 
+       'Mjob', 'Fjob', 'reason', 'guardian', 'schoolsup', 'famsup', 'paid', 
+       'activities', 'nursery','higher', 'internet', 'romantic' ]
 
 
+data= pd.crosstab(st_data["passed"],st_data['sex'])
+print(data)
+import scipy.stats as stats
+stats.chi2_contingency(data)
 
-#Exploratory Data Analysis
 
-st_data.describe()
 
-st_data.dtypes
+
+#-------------------------------------------------------------------------------
+#prediction on Test data
+
+xtest = test_data[['age','Medu','Fedu','failures','goout','absences','studytime']]
+ytest = test_data['passed']
+
+
+for cat_var in obj_cols:
+    dummy_data= pd.get_dummies(test_data[cat_var], prefix= cat_var)
+    #xtrain = pd.concat([xtrain, dummy_data], axis =1)
+    xtest= xtest.join(dummy_data)
+    
+# Get missing columns in the training test
+missing_cols = set( xtrain.columns ) - set( xtest.columns )
+# Add a missing column in test set with default value equal to 0
+for c in missing_cols:
+    xtest[c] = 0
+# Ensure the order of column in the test set is in the same order than in train set
+xtest = xtest[xtrain.columns]
+
+test_data['prob_'+model.classes_[0]]=  model.predict_proba(xtest)[:,0]
+
+test_data['NcolPrediction']= np.where(test_data['prob_no']>0.3, 'no','yes')
+pd.crosstab(ytest, test_data['NcolPrediction'])
+
+from sklearn.metrics import classification_report
+print(classification_report(test_data['NcolPrediction'],test_data['passed']))
+
+
+
+#Important links to study
+#case study
+#https://github.com/mohammedAljadd/students-performance-prediction
+
+#Feature interpretation
+#https://medium.com/analytics-vidhya/how-to-interpret-the-logistic-regression-model-with-python-2bacfb50e223
+
+#model performance improvement
+#https://scikit-learn.org/stable/modules/preprocessing.html
+
+#kaggle links
+#https://www.kaggle.com/datasets/whenamancodes/student-performance?select=Portuguese.csv
+#https://www.kaggle.com/code/bhavyabhola/student-performance-for-maths
+#https://www.kaggle.com/code/biswajit01/student-performance-prediction
+
+#Algorithms
+#https://www.kaggle.com/code/rmalshe/student-performance-prediction
+############################################################################################
+
 
 #get numeric columns
 cols = st_data.columns
@@ -180,21 +255,6 @@ list(set(cols) - set(num_cols))
 
 
 
-
-
-#By default gives only for numeric columns
-emp_data.describe()
-# list of dtypes to include
-emp_data.describe(include= ['object'])
-
-
-
-from scipy import stats
-stats.ttest_ind(input_data.loc[input_data['passed']=='yes','traveltime'],
-                input_data.loc[input_data['passed']=='no','traveltime'])
-
-
-sns.boxplot(data=emp_data,x="LOCATION", y="CTC", hue='GENDER')
 
 
 cont = pd.crosstab(input_data['passed'],input_data['sex'])
