@@ -103,6 +103,30 @@ train_data['NcolPrediction']=  model.predict(xtrain)
 
 pd.crosstab(ytrain, train_data['NcolPrediction'])
 
+train_data['prob_'+model.classes_[0]]=  model.predict_proba(xtrain)[:,0]
+
+import numpy as np
+np.arange(0.0, 1.0, 0.1)
+
+acuracy_cal= pd.DataFrame()
+for threshold in np.arange(0.0, 1.0, 0.1):
+    train_data['predicted_class']= np.where(train_data['prob_no']>threshold, 'no','yes')
+    total_pred= len(train_data[train_data['predicted_class']=='no'])
+    total_act= len(train_data[train_data['passed']=='no'])
+    total_cprediction= len(train_data[(train_data['predicted_class']=='no') &
+                                          (train_data['passed']=='no')])
+    precision= total_cprediction/total_pred
+    recall =  total_cprediction/total_act
+    f1_score= (2*precision*recall) /(precision+ recall)
+    acuracy_cal= acuracy_cal.append(pd.DataFrame([[threshold, precision, recall, f1_score]], 
+                                                 columns= ['Threshold','Precision','Recall','F1_Score']))
+
+
+train_data['NcolPrediction']= np.where(train_data['prob_no']>0.3, 'no','yes')
+pd.crosstab(ytrain, train_data['NcolPrediction'])
+
+from sklearn.metrics import classification_report
+print(classification_report(train_data['NcolPrediction'],train_data['passed']))
 #------------------------------------------------------
 #model3 : classification with both selected numeric and categorical columns
 xtrain = train_data[['age','Medu','Fedu','failures','goout','absences','studytime']]
@@ -183,19 +207,95 @@ cat_summary= pd.DataFrame(st_data.describe(include= ['object']))
 
 cat_summary = cat_summary.T
 
+cat_summary= cat_summary[cat_summary['freq']<340]
+
+cat_summary.index
 # Chi -square test for each categorical variable
-obj_cols= ['school', 'sex', 'address', 'famsize', 'Pstatus', 
-       'Mjob', 'Fjob', 'reason', 'guardian', 'schoolsup', 'famsup', 'paid', 
-       'activities', 'nursery','higher', 'internet', 'romantic' ]
+obj_cols= ['sex', 'address', 'famsize', 'Mjob', 'Fjob', 'reason', 'guardian',
+       'famsup', 'paid', 'activities', 'nursery', 'internet', 'romantic']
 
-
-data= pd.crosstab(st_data["passed"],st_data['sex'])
-print(data)
 import scipy.stats as stats
-stats.chi2_contingency(data)
+for cat_var in obj_cols:
+    data= pd.crosstab(st_data["passed"],st_data[cat_var])
+    print(data)  
+    print(stats.chi2_contingency(data))
+
+#just for the no classes and check the importance of feature
+for cat_var in obj_cols:
+    print(cat_var)
+    df= st_data[st_data["passed"]=='no']
+    data_obs= df[cat_var].value_counts().to_list()
+    expected = [sum(data_obs)/len(data_obs)]*len(data_obs)
+    #perform Chi-Square Goodness of Fit Test
+    print(stats.chisquare(f_obs=data_obs, f_exp=expected))
+    
+#not important= sex, ,famsize
+#important= address, famsize,Mjob, Fjob,reason,guardian,famsup,paid,nursery,internet, romantic
+
+xtrain = train_data[['age','Medu','Fedu','failures','goout','absences','studytime']]
+ytrain = train_data['passed']
+obj_cols= [ 'address', 'famsize', 
+       'Mjob', 'Fjob', 'reason', 'guardian',  'famsup', 'paid', 
+        'nursery', 'internet', 'romantic' ]
+
+#creating dummy variables for categorical column 
+for cat_var in obj_cols:
+    '''
+    dummy_data= pd.get_dummies(train_data[cat_var])
+    
+    cols= dummy_data.columns
+    #adding column name in fornt to recognize otherwise only yes or no
+    new_cols= []
+    for col in cols:
+        new_cols.append(cat_var+'_'+col)
+        
+    dummy_data.columns= new_cols
+    '''
+    dummy_data= pd.get_dummies(train_data[cat_var], prefix= cat_var)
+    #xtrain = pd.concat([xtrain, dummy_data], axis =1)
+    xtrain= xtrain.join(dummy_data)
+    
+from sklearn.linear_model import LogisticRegression
+
+model= LogisticRegression()
+model.fit(xtrain, ytrain)
+
+train_data['NcolPrediction']=  model.predict(xtrain)
+
+pd.crosstab(ytrain, train_data['NcolPrediction'])
+
+# the default threshold is 0.5, it seems like model perforamnce not improving lets try to
+#better threshold using precision and recall
+
+train_data['prob_'+model.classes_[0]]=  model.predict_proba(xtrain)[:,0]
+
+sns.boxplot(train_data['prob_no'],train_data['passed'])
+
+sns.relplot(train_data['age'],train_data['prob_no'], hue= train_data['passed'])
 
 
+import numpy as np
+np.arange(0.0, 1.0, 0.1)
 
+acuracy_cal= pd.DataFrame()
+for threshold in np.arange(0.0, 1.0, 0.1):
+    train_data['predicted_class']= np.where(train_data['prob_no']>threshold, 'no','yes')
+    total_pred= len(train_data[train_data['predicted_class']=='no'])
+    total_act= len(train_data[train_data['passed']=='no'])
+    total_cprediction= len(train_data[(train_data['predicted_class']=='no') &
+                                          (train_data['passed']=='no')])
+    precision= total_cprediction/total_pred
+    recall =  total_cprediction/total_act
+    f1_score= (2*precision*recall) /(precision+ recall)
+    acuracy_cal= acuracy_cal.append(pd.DataFrame([[threshold, precision, recall, f1_score]], 
+                                                 columns= ['Threshold','Precision','Recall','F1_Score']))
+
+optimal_threshold=  acuracy_cal.loc[ acuracy_cal['F1_Score']== max(acuracy_cal['F1_Score']),'Threshold'][0]
+train_data['NcolPrediction']= np.where(train_data['prob_no']>optimal_threshold, 'no','yes')
+pd.crosstab(ytrain, train_data['NcolPrediction'])
+
+from sklearn.metrics import classification_report
+print(classification_report(train_data['NcolPrediction'],train_data['passed']))
 
 #-------------------------------------------------------------------------------
 #prediction on Test data
@@ -219,13 +319,17 @@ xtest = xtest[xtrain.columns]
 
 test_data['prob_'+model.classes_[0]]=  model.predict_proba(xtest)[:,0]
 
-test_data['NcolPrediction']= np.where(test_data['prob_no']>0.3, 'no','yes')
+test_data['NcolPrediction']= np.where(test_data['prob_no']>optimal_threshold, 'no','yes')
 pd.crosstab(ytest, test_data['NcolPrediction'])
 
 from sklearn.metrics import classification_report
 print(classification_report(test_data['NcolPrediction'],test_data['passed']))
 
+print(pd.DataFrame({'Features': xtrain.columns,'Coeffiecient': model.coef_[0]}))
 
+model.intercept_
+
+#---------------------------------------------------------------
 
 #Important links to study
 #case study

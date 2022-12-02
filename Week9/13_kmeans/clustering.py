@@ -57,7 +57,11 @@ wcss_cal= pd.merge(data,cluster_center)
 for k in  range(1, 10, 1):
     km = KMeans(n_clusters=3)
     data['cluster'] = km.fit_predict(data[['Age','Income($)']])
-    
+    cluster_center = pd.DataFrame({'cluster': range(0, k, 1), 
+                  'center_age': km.cluster_centers_[:,0],
+                  'center_income': km.cluster_centers_[:,1]})
+    error_cal = pd.merge(data, cluster_center)
+    data['Square Error'] =
 
 
 
